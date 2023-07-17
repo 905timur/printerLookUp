@@ -1,9 +1,13 @@
 import socket
 import threading
 from queue import Queue
+import netaddr
 
 def ip_range(target_subnet):
-    return [ip for ip in range(target_subnet.split("/")[0], target_subnet.split("/")[0] + 256)]
+    """Returns a list of all the IP addresses in the subnet specified by the target_subnet variable."""
+
+    network = netaddr.IPNetwork(target_subnet)
+    return [str(ip) for ip in network]
 
 def portscan(ip, port):
     try:
