@@ -1,6 +1,5 @@
 import socket
 import concurrent.futures
-from queue import Queue
 import netaddr
 import logging
 
@@ -13,6 +12,7 @@ def ip_range(target_subnet):
 def portscan(ip, port):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(1)  # Set socket timeout to 1 second
             sock.connect((ip, port))
             return True
     except:
@@ -21,9 +21,10 @@ def portscan(ip, port):
 def get_printer_info(ip, port):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(1)  # Set socket timeout to 1 second
             sock.connect((ip, port))
             printer = sock.recv(1024)
-            printers.append({'ip': ip, 'brand': printer.split(' ')[0], 'model': printer.split(' ')[1]})
+            printers.add((ip, printer.split(' ')[0], printer.split(' ')[1]))  # Use a set to store printers
     except Exception as e:
         logging.error(f"Error getting printer info for {ip}: {str(e)}")
 
@@ -35,21 +36,19 @@ def scan(ip, port=9100):
         logging.error(f"Error scanning {ip}: {str(e)}")
 
 try:
-    printers = []
-    queue = Queue()
-    for ip in ip_range(target_subnet):
-        queue.put(ip)
+    printers = set()  # Use a set to store printers
 
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        for ip in queue.queue:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:  # Limit the maximum number of concurrent threads to 10
+        for ip in ip_range(target_subnet):
             executor.submit(scan, ip)
 
-    with open('printers.txt', 'w') as f:
-        for printer in printers:
-            f.write(f"{printer['ip']} {printer['brand']} {printer['model']}\n")
+    collected_data = '\n'.join([f"{printer[0]} {printer[1]} {printer[2]}" for printer in printers])
 
-finally:
-    f.close()
+    with open('printers.txt', 'w') as f:
+        f.write(collected_data)
+
+except KeyboardInterrupt:
+    logging.info("Scan interrupted by user.")
 
 except Exception as e:
     logging.error(str(e))
