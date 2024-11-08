@@ -22,3 +22,15 @@ Before using the **printerLookUp** script, ensure you have the following install
 3.  (optional) The script is set to run on TCP port 9100, modify if needed.
 
 4.  Execute the script in terminal by running `python printerLookUp.py`
+
+## BASH
+
+1.   Make it executable: chmod +x script.sh
+
+2.   Run it with a subnet: ./script.sh 192.168.1.0/24
+
+Requirements:
+
+nc (netcat) for printer information retrieval
+ipcalc for subnet calculations
+timeout command (usually pre-installed)
