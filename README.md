@@ -32,5 +32,7 @@ Before using the **printerLookUp** script, ensure you have the following install
 Requirements:
 
 nc (netcat) for printer information retrieval
+
 ipcalc for subnet calculations
+
 timeout command (usually pre-installed)
